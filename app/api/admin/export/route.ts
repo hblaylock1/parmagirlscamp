@@ -38,7 +38,10 @@ const COLUMNS: { key: keyof Row; label: string }[] = [
 function csvEscape(v: unknown): string {
   if (v === true) return "Yes";
   if (v === false) return "No";
-  const s = v == null ? "" : String(v);
+  let s = v == null ? "" : String(v);
+  // Values come from the public registration form; spreadsheets evaluate
+  // cells starting with these characters, so neutralize them.
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }

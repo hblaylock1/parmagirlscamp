@@ -24,7 +24,22 @@ async function readAll(): Promise<Registration[]> {
 
 async function writeAll(rows: Registration[]) {
   await ensureDirs();
-  await fs.writeFile(DB_FILE, JSON.stringify(rows, null, 2));
+  const tmp = `${DB_FILE}.tmp`;
+  await fs.writeFile(tmp, JSON.stringify(rows, null, 2));
+  await fs.rename(tmp, DB_FILE);
+}
+
+// The server runs as a single Node process, so chaining every mutation
+// through one promise queue is enough to keep concurrent read-modify-write
+// cycles on registrations.json from overwriting each other's rows.
+let mutationQueue: Promise<void> = Promise.resolve();
+function withMutationLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = mutationQueue.then(fn);
+  mutationQueue = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
 }
 
 export async function listRegistrations(): Promise<Registration[]> {
@@ -47,9 +62,11 @@ export async function createRegistration(
     signedAt: new Date().toISOString(),
     pdfFile,
   };
-  const rows = await readAll();
-  rows.push(row);
-  await writeAll(rows);
+  await withMutationLock(async () => {
+    const rows = await readAll();
+    rows.push(row);
+    await writeAll(rows);
+  });
   return row;
 }
 
@@ -67,21 +84,27 @@ export async function updateRegistration(
   id: string,
   patch: Partial<EditableFields>,
 ): Promise<Registration | null> {
-  const rows = await readAll();
-  const idx = rows.findIndex((r) => r.id === id);
-  if (idx === -1) return null;
-  rows[idx] = { ...rows[idx], ...patch };
-  await writeAll(rows);
-  return rows[idx];
+  return withMutationLock(async () => {
+    const rows = await readAll();
+    const idx = rows.findIndex((r) => r.id === id);
+    if (idx === -1) return null;
+    rows[idx] = { ...rows[idx], ...patch };
+    await writeAll(rows);
+    return rows[idx];
+  });
 }
 
 export async function deleteRegistration(id: string): Promise<boolean> {
-  const rows = await readAll();
-  const idx = rows.findIndex((r) => r.id === id);
-  if (idx === -1) return false;
-  const [removed] = rows.splice(idx, 1);
-  await writeAll(rows);
-  if (removed?.pdfFile) {
+  const removed = await withMutationLock(async () => {
+    const rows = await readAll();
+    const idx = rows.findIndex((r) => r.id === id);
+    if (idx === -1) return null;
+    const [gone] = rows.splice(idx, 1);
+    await writeAll(rows);
+    return gone ?? null;
+  });
+  if (removed === null) return false;
+  if (removed.pdfFile) {
     const pdfPath = path.join(PDF_DIR, path.basename(removed.pdfFile));
     try {
       await fs.unlink(pdfPath);
