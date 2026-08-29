@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 font-medium transition;
+}
+.btn-primary {
+  @apply btn bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50;
+}
+.btn-secondary {
+  @apply btn bg-white text-slate-700 border border-slate-300 hover:bg-slate-50;
+}
+.field {
+  @apply block w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+}
+.label {
+  @apply block text-sm font-medium text-slate-700 mb-1;
+}
+
+.bg-stripes {
+  background-color: #dceafb;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #c9dff6 0,
+    #c9dff6 48px,
+    #dceafb 48px,
+    #dceafb 108px
+  );
+}
+
+.text-shadow-navy {
+  text-shadow: 2px 2px 0 #1d3f72;
+}
