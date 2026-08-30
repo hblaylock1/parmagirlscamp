@@ -3,20 +3,6 @@
 // GitHub, edit this file, swap public/logo.png + public/qr-code.jpg + the
 // church PDF if needed, and deploy. Nothing else should need touching.
 
-import type { TshirtSize } from "./wards";
-
-export const TSHIRT_SIZES = [
-  "Youth - Small",
-  "Youth - Medium",
-  "Youth - Large",
-  "Adult - Small",
-  "Adult - Medium",
-  "Adult - Large",
-  "Adult - XL",
-  "Adult - 2XL",
-  "Adult - 3XL",
-] as const satisfies readonly TshirtSize[];
-
 export interface FeeConfig {
   amount: number;
   donationLine: string;
@@ -33,6 +19,12 @@ export interface EventConfig {
   dateBannerLabel: string; // e.g. "Save the date"
   dateLine: string; // e.g. "Saturday, June 6, 2026"
   timeLine: string; // e.g. "8:00 AM – 11:00 PM"
+
+  // Optional flyer-style copy on the landing page. null hides each block.
+  eyebrowLine: string | null; // small line above the title, e.g. who it's for
+  tagline: string | null; // short line under the title
+  reminders: { heading: string; body: string }[] | null; // "what to bring" callouts
+  themeGraphic: { lines: string[]; reference: string } | null; // sunburst motto + scripture
 
   // Values stamped into the church PDF's form fields
   pdf: {
@@ -68,47 +60,44 @@ export interface EventConfig {
 // >>> EDIT BELOW FOR EACH EVENT <<<
 // =============================================================================
 export const EVENT: EventConfig = {
-  shortName: "NYS",
-  title: "Nyssa Youth Spectacular",
+  shortName: "Girls Camp",
+  title: "Parma 1st Ward Girls Camp",
   metaDescription:
-    "Register your youth for the Nyssa Youth Spectacular — Saturday, June 6, 2026.",
+    "Register your young woman for the Parma 1st Ward Girls Camp — June 25–27, 2026.",
 
-  dateBannerLabel: "Save the date",
-  dateLine: "Saturday, June 6, 2026",
-  timeLine: "8:00 AM – 11:00 PM",
+  dateBannerLabel: "Camp dates",
+  dateLine: "Thursday – Saturday, June 25 – 27, 2026",
+  timeLine: "",
+
+  eyebrowLine: null,
+  tagline: null,
+  reminders: null,
+  themeGraphic: null,
 
   pdf: {
-    event: "Nyssa Youth Spectacular",
-    datesOfEvent: "06/06/2026",
-    description: "",
+    event: "Parma 1st Ward Girls Camp",
+    datesOfEvent: "06/25/2026 – 06/27/2026",
+    // TODO: confirm the leader contact details below — they are stamped into
+    // each registrant's signed permission PDF and were not recoverable from
+    // the live site.
+    description: "Girls Camp for young women of the Parma 1st Ward.",
     stake: "Nyssa Stake",
-    leader: "Kurt Romans",
-    leaderPhone: "541-212-0409",
+    leader: "",
+    leaderPhone: "",
     leaderEmail: "",
   },
 
-  maxBirthdate: "2012-12-31",
+  maxBirthdate: null,
 
-  wards: [
-    "Nyssa 1st Ward",
-    "Nyssa 2nd Ward",
-    "Nyssa 3rd Ward",
-    "Owyhee Ward",
-    "Parma 1st Ward",
-    "Parma 2nd Ward",
-    "Parma 3rd Ward",
-    "Vale 1st Ward",
-    "Vale 2nd Ward",
-    "Other",
-  ],
+  wards: ["Parma 1st Ward"],
 
   fee: {
-    amount: 35,
+    amount: 25,
     donationLine: "Local — Youth Camp Registration",
     showExampleImage: true,
   },
 
-  authMode: "stake",
+  authMode: "single",
 };
 
 export const SINGLE_WARD = EVENT.wards.length === 1 ? EVENT.wards[0] : null;
